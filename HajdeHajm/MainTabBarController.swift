@@ -21,7 +21,7 @@ class MainTabBarController: UITabBarController {
         let summaryVC = UINavigationController(rootViewController: WeeklySummaryViewController())
         summaryVC.tabBarItem = UITabBarItem(title: "Summary", image: UIImage(systemName: "chart.bar"), tag: 1)
 
-        let profileVC = UIViewController()
+        let profileVC = UINavigationController(rootViewController: ProfileViewController())
         profileVC.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(systemName: "person.circle"), tag: 2)
 
         viewControllers = [ordersVC, summaryVC, profileVC]
