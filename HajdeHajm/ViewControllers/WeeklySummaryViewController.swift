@@ -233,9 +233,9 @@ class WeeklySummaryViewController: UIViewController {
             let date = weekStart.addingTimeInterval(TimeInterval(i * 24 * 60 * 60))
             if Int.random(in: 0...1) == 1 { // Randomly decide if there's an order for this day
                 let items: [MenuItem: Int] = [
-                    MenuItem(id: "1", name: "Burger", description: "", price: 120): Int.random(in: 1...2),
-                    MenuItem(id: "2", name: "Fries", description: "", price: 60): Int.random(in: 0...1),
-                    MenuItem(id: "3", name: "Cola", description: "", price: 40): Int.random(in: 0...1)
+                    MenuItem(id: "1", name: "Burger", description: "", price: 120, category: ""): Int.random(in: 1...2),
+                    MenuItem(id: "2", name: "Fries", description: "", price: 60, category: ""): Int.random(in: 0...1),
+                    MenuItem(id: "3", name: "Cola", description: "", price: 40, category: ""): Int.random(in: 0...1)
                 ]
                 orders.append(Order(userId: "1", items: items, date: date))
             }

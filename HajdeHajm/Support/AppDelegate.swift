@@ -15,7 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         FirebaseApp.configure()
         NotificationManager.shared.requestAuthorization()
-
+        
+        FirebaseApp.app()?.isDataCollectionDefaultEnabled = false
         
         return true
     }

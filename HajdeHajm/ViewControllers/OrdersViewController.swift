@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseFirestore
+import FirebaseAuth
 
 class OrdersViewController: UIViewController {
     
@@ -79,15 +81,62 @@ class OrdersViewController: UIViewController {
     }
     
     private func fetchMenuItems() {
-        // In a real app, you would fetch this data from an API or local database
-        menuItems = [
-            MenuItem(id: "1", name: "Burger", description: "Delicious beef burger", price: 120),
-            MenuItem(id: "2", name: "Fries", description: "Crispy fries", price: 60),
-            MenuItem(id: "3", name: "Cola", description: "Refreshing drink", price: 40),
-            MenuItem(id: "4", name: "Salad", description: "Fresh green salad", price: 80),
-            MenuItem(id: "5", name: "Pizza", description: "Margherita pizza", price: 150)
-        ]
+        FirestoreManager.shared.fetchMenuItems { [weak self] result in
+            switch result {
+            case .success(let items):
+                self?.menuItems = items
+                DispatchQueue.main.async {
+                    self?.tableView.reloadData()
+                }
+            case .failure(let error):
+                print("Error fetching menu items: \(error.localizedDescription)")
+                // Handle error (e.g., show an alert to the user)
+            }
+        }
+    }
+    
+    @objc private func submitOrder() {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("User not logged in")
+            // Show an alert to the user that they need to log in
+            let alert = UIAlertController(title: "Not Logged In", message: "Please log in to submit an order.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        let order = Order(userId: userId, items: selectedItems, date: Date())
+        
+        FirestoreManager.shared.saveOrder(order) { [weak self] result in
+            switch result {
+            case .success:
+                DispatchQueue.main.async {
+                    self?.showOrderConfirmation()
+                    self?.clearOrder()
+                }
+            case .failure(let error):
+                print("Error saving order: \(error.localizedDescription)")
+                // Handle error (e.g., show an alert to the user)
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Order Submission Failed", message: "There was an error submitting your order. Please try again.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self?.present(alert, animated: true, completion: nil)
+                }
+            }
+        }
+    }
+    
+    
+    private func showOrderConfirmation() {
+        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func clearOrder() {
+        selectedItems.removeAll()
         tableView.reloadData()
+        updateTotalLabel()
     }
     
     private func updateTotalLabel() {
@@ -102,21 +151,21 @@ class OrdersViewController: UIViewController {
         submitButton.isEnabled = !selectedItems.isEmpty
     }
     
-    @objc private func submitOrder() {
-        let order = Order(userId: "1", items: selectedItems, date: Date())
-        // In a real app, you would save this order to a database or send it to a server
-        print("Order submitted: \(order)")
-        
-        // Clear the selected items and update the UI
-        selectedItems.removeAll()
-        tableView.reloadData()
-        updateTotalLabel()
-        
-        // Show a confirmation to the user
-        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
+    //    @objc private func submitOrder() {
+    //        let order = Order(userId: "1", items: selectedItems, date: Date())
+    //        // In a real app, you would save this order to Firestore
+    //        print("Order submitted: \(order)")
+    //
+    //        // Clear the selected items and update the UI
+    //        selectedItems.removeAll()
+    //        tableView.reloadData()
+    //        updateTotalLabel()
+    //
+    //        // Show a confirmation to the user
+    //        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
+    //        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+    //        present(alert, animated: true, completion: nil)
+    //    }
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource

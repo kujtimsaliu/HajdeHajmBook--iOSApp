@@ -66,9 +66,9 @@ class ViewController: UIViewController {
         // Fetch menu items from Firebase
         // For now, let's add some dummy data
         menuItems = [
-            MenuItem(id: "1", name: "Burger", description: "Delicious burger", price: 200),
-            MenuItem(id: "2", name: "Fries", description: "Crispy fries", price: 100),
-            MenuItem(id: "3", name: "Cola", description: "Refreshing drink", price: 80)
+            MenuItem(id: "1", name: "Burger", description: "Delicious burger", price: 200, category: ""),
+            MenuItem(id: "2", name: "Fries", description: "Crispy fries", price: 100,category: ""),
+            MenuItem(id: "3", name: "Cola", description: "Refreshing drink", price: 80, category: "")
         ]
         tableView.reloadData()
     }
