@@ -130,7 +130,7 @@ class ProfileViewController: UIViewController {
     
     private func loadUserData() {
         // In a real app, you would fetch this data from your user management system
-        nameLabel.text = "Bashkim Krasniqi (swift autocomplete came up with this name)"
+        nameLabel.text = "Lana swift"
         profileImageView.image = UIImage(systemName: "person.circle.fill")
     }
     
