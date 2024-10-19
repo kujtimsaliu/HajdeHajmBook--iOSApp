@@ -7,15 +7,14 @@
 
 import Foundation
 
-struct MenuItem: Identifiable, Hashable {
-    var id: String
+struct MenuItem: Codable, Identifiable, Hashable {
+    var id: String? = nil
     let name: String
     let description: String
     let price: Int
     let category: String?
     
-    init(id: String = UUID().uuidString, name: String, description: String, price: Int, category: String? = nil) {
-        self.id = id
+    init(name: String, description: String, price: Int, category: String? = nil) {
         self.name = name
         self.description = description
         self.price = price

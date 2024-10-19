@@ -6,9 +6,12 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class ProfileViewController: UIViewController {
     
+    private var window: UIWindow?
     // MARK: - UI Components
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
@@ -51,6 +54,33 @@ class ProfileViewController: UIViewController {
         return button
     }()
     
+    private lazy var signoutButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Sign Out", for: .normal)
+        button.addTarget(self, action: #selector(signout), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    @objc func signout(){
+        do {
+            try Auth.auth().signOut()
+            window?.rootViewController = LoginViewController(window: window)
+            
+        }catch{
+            print("failed to sign out")
+        }
+    }
+    
+    init(window: UIWindow?){
+        super.init(nibName: nil, bundle: nil)
+        self.window = window
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - Lifecycle Methods
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +97,7 @@ class ProfileViewController: UIViewController {
         view.addSubview(settingsButton)
         view.addSubview(paymentButton)
         view.addSubview(orderHistoryButton)
+        view.addSubview(signoutButton)
         
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -89,6 +120,10 @@ class ProfileViewController: UIViewController {
             orderHistoryButton.topAnchor.constraint(equalTo: paymentButton.bottomAnchor, constant: 20),
             orderHistoryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             orderHistoryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            signoutButton.topAnchor.constraint(equalTo: orderHistoryButton.bottomAnchor, constant: 20),
+            signoutButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            signoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
         ])
     }
     

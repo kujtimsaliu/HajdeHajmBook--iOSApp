@@ -66,9 +66,9 @@ class ViewController: UIViewController {
         // Fetch menu items from Firebase
         // For now, let's add some dummy data
         menuItems = [
-            MenuItem(id: "1", name: "Burger", description: "Delicious burger", price: 200, category: ""),
-            MenuItem(id: "2", name: "Fries", description: "Crispy fries", price: 100,category: ""),
-            MenuItem(id: "3", name: "Cola", description: "Refreshing drink", price: 80, category: "")
+            MenuItem( name: "Burger", description: "Delicious burger", price: 200, category: ""),
+            MenuItem( name: "Fries", description: "Crispy fries", price: 100,category: ""),
+            MenuItem( name: "Cola", description: "Refreshing drink", price: 80, category: "")
         ]
         tableView.reloadData()
     }
@@ -82,9 +82,9 @@ class ViewController: UIViewController {
     }
 
     private func presentLoginViewController() {
-        let loginVC = LoginViewController()
-        loginVC.modalPresentationStyle = .fullScreen
-        present(loginVC, animated: true, completion: nil)
+//        let loginVC = LoginViewController(window)
+//        loginVC.modalPresentationStyle = .fullScreen
+//        present(loginVC, animated: true, completion: nil)
     }
 
     // MARK: - Actions

@@ -7,87 +7,114 @@
 
 import UIKit
 import FirebaseAuth
+import Firebase
 
 class LoginViewController: UIViewController {
-
-    // MARK: - UI Elements
-    private lazy var emailTextField: UITextField = {
+    private var window: UIWindow?
+    private let emailTextField: UITextField = {
         let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Email"
         textField.borderStyle = .roundedRect
         textField.autocapitalizationType = .none
+        textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
-    private lazy var passwordTextField: UITextField = {
+    private let passwordTextField: UITextField = {
         let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "Password"
         textField.borderStyle = .roundedRect
         textField.isSecureTextEntry = true
+        textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
 
-    private lazy var loginButton: UIButton = {
+    private let loginButton: UIButton = {
         let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("Login", for: .normal)
-        button.addTarget(self, action: #selector(loginTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
-    // MARK: - Lifecycle Methods
+    
+    init(window: UIWindow?){
+        super.init(nibName: nil, bundle: nil)
+        self.window = window
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
     }
 
-    // MARK: - Setup Methods
     private func setupUI() {
         view.backgroundColor = .white
-        
         view.addSubview(emailTextField)
         view.addSubview(passwordTextField)
         view.addSubview(loginButton)
 
         NSLayoutConstraint.activate([
-            emailTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -60),
-            emailTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            emailTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            emailTextField.heightAnchor.constraint(equalToConstant: 50),
+            emailTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emailTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50),
+            emailTextField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
 
+            passwordTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 20),
-            passwordTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            passwordTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            passwordTextField.heightAnchor.constraint(equalToConstant: 50),
+            passwordTextField.widthAnchor.constraint(equalTo: emailTextField.widthAnchor),
 
-            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 20),
             loginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            loginButton.widthAnchor.constraint(equalToConstant: 200),
-            loginButton.heightAnchor.constraint(equalToConstant: 50)
+            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 20)
         ])
+
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
     }
 
-    // MARK: - Actions
-
-    @objc private func loginTapped() {
-        guard let email = emailTextField.text, let password = passwordTextField.text else { return }
+    @objc private func loginButtonTapped() {
+        guard let email = emailTextField.text, let password = passwordTextField.text else {
+            showAlert(message: "Please enter both email and password")
+            return
+        }
         
+        guard email.isEmpty == false, password.isEmpty == false else {
+            showAlert(message: "Please enter both email and password")
+            return
+        }
+        
+
+
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
             if let error = error {
-                print("Login error: \(error.localizedDescription)")
-                self?.showAlert(title: "Login Error", message: error.localizedDescription)
+                self?.showCreateAccountAlert(email, password)
             } else {
                 self?.dismiss(animated: true, completion: nil)
+                self?.window?.rootViewController = MainTabBarController(window: self?.window, currentUser: Auth.auth().currentUser)
             }
         }
     }
+    
+    func showCreateAccountAlert(_ email: String, _ password: String) {
+        let alert = UIAlertController(title: "Create Account", message: "Would you like to create an account?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
+            Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
+                if let error = error {
+                    self?.showAlert(message: "Registration failed: \(error.localizedDescription)")
+                } else {
+                    self?.dismiss(animated: true, completion: nil)
+                    self?.window?.rootViewController = MainTabBarController(window: self?.window, currentUser: Auth.auth().currentUser)
+                }
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { _ in }))
+        present(alert, animated: true, completion: nil)
+        
+    }
 
-    // MARK: - Helper Methods
-    private func showAlert(title: String, message: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alertController, animated: true, completion: nil)
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
 }

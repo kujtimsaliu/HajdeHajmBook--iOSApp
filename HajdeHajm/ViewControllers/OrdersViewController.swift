@@ -9,11 +9,14 @@ import UIKit
 import FirebaseFirestore
 import FirebaseAuth
 
+
 class OrdersViewController: UIViewController {
     
     // MARK: - Properties
     private var menuItems: [MenuItem] = []
     private var selectedItems: [MenuItem: Int] = [:]
+    private let refreshControl = UIRefreshControl()
+    private var currentUser: User?
     
     // MARK: - UI Components
     private let tableView: UITableView = {
@@ -42,6 +45,7 @@ class OrdersViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        fetchCurrentUser()
         fetchMenuItems()
     }
     
@@ -78,6 +82,23 @@ class OrdersViewController: UIViewController {
         tableView.dataSource = self
         
         submitButton.addTarget(self, action: #selector(submitOrder), for: .touchUpInside)
+        
+        // Setup refresh control
+        refreshControl.addTarget(self, action: #selector(refreshMenuItems), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+    }
+    
+    // MARK: - Data Fetching
+    private func fetchCurrentUser() {
+        FirestoreManager.shared.getCurrentUser { [weak self] result in
+            switch result {
+            case .success(let user):
+                self?.currentUser = user
+            case .failure(let error):
+                print("Error fetching current user: \(error.localizedDescription)")
+                // Handle error (e.g., show an alert to the user)
+            }
+        }
     }
     
     private func fetchMenuItems() {
@@ -87,56 +108,19 @@ class OrdersViewController: UIViewController {
                 self?.menuItems = items
                 DispatchQueue.main.async {
                     self?.tableView.reloadData()
+                    self?.refreshControl.endRefreshing()
                 }
             case .failure(let error):
                 print("Error fetching menu items: \(error.localizedDescription)")
-                // Handle error (e.g., show an alert to the user)
-            }
-        }
-    }
-    
-    @objc private func submitOrder() {
-        guard let userId = Auth.auth().currentUser?.uid else {
-            print("User not logged in")
-            // Show an alert to the user that they need to log in
-            let alert = UIAlertController(title: "Not Logged In", message: "Please log in to submit an order.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            present(alert, animated: true, completion: nil)
-            return
-        }
-        
-        let order = Order(userId: userId, items: selectedItems, date: Date())
-        
-        FirestoreManager.shared.saveOrder(order) { [weak self] result in
-            switch result {
-            case .success:
                 DispatchQueue.main.async {
-                    self?.showOrderConfirmation()
-                    self?.clearOrder()
-                }
-            case .failure(let error):
-                print("Error saving order: \(error.localizedDescription)")
-                // Handle error (e.g., show an alert to the user)
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: "Order Submission Failed", message: "There was an error submitting your order. Please try again.", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self?.present(alert, animated: true, completion: nil)
+                    self?.refreshControl.endRefreshing()
                 }
             }
         }
     }
     
-    
-    private func showOrderConfirmation() {
-        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
-    }
-    
-    private func clearOrder() {
-        selectedItems.removeAll()
-        tableView.reloadData()
-        updateTotalLabel()
+    @objc private func refreshMenuItems() {
+        fetchMenuItems()
     }
     
     private func updateTotalLabel() {
@@ -151,21 +135,56 @@ class OrdersViewController: UIViewController {
         submitButton.isEnabled = !selectedItems.isEmpty
     }
     
-    //    @objc private func submitOrder() {
-    //        let order = Order(userId: "1", items: selectedItems, date: Date())
-    //        // In a real app, you would save this order to Firestore
-    //        print("Order submitted: \(order)")
-    //
-    //        // Clear the selected items and update the UI
-    //        selectedItems.removeAll()
-    //        tableView.reloadData()
-    //        updateTotalLabel()
-    //
-    //        // Show a confirmation to the user
-    //        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
-    //        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-    //        present(alert, animated: true, completion: nil)
-    //    }
+    @objc private func submitOrder() {
+            guard let currentUser = Auth.auth().currentUser else {
+                showAlert(title: "Error", message: "You must be logged in to submit an order.")
+                return
+            }
+            
+            let orderItems = selectedItems.map { menuItem, quantity in
+                OrderItem(menuItem: menuItem, quantity: quantity)
+            }
+            
+            let order = Order(
+                id: UUID().uuidString,
+                userId: currentUser.uid,
+                items: orderItems,
+                date: Date(),
+                isPaid: false,
+                userName: currentUser.email ?? "Unknown User"
+            )
+            
+            FirestoreManager.shared.saveOrder(order) { [weak self] result in
+                switch result {
+                case .success:
+                    DispatchQueue.main.async {
+                        self?.showAlert(title: "Success", message: "Your order has been submitted.")
+                        self?.clearOrder()
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        self?.showAlert(title: "Error", message: "Failed to submit order: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+    
+    private func clearOrder() {
+           selectedItems.removeAll()
+           tableView.reloadData()
+           updateTotalLabel()
+       }
+       
+       private func showAlert(title: String, message: String) {
+           let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+           alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+           present(alert, animated: true, completion: nil)
+       }
+    private func showOrderConfirmation() {
+        let alert = UIAlertController(title: "Order Submitted", message: "Your order has been successfully submitted.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource

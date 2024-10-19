@@ -68,7 +68,7 @@ class MenuItemCell: UITableViewCell {
     func configure(with menuItem: MenuItem, quantity: Int) {
         self.menuItem = menuItem
         nameLabel.text = menuItem.name
-        descriptionLabel.text = menuItem.description
+        descriptionLabel.text = menuItem.category
         priceLabel.text = "\(menuItem.price) MKD"
         quantityStepper.value = Double(quantity)
         quantityLabel.text = "\(quantity)"

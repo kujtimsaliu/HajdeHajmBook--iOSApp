@@ -84,9 +84,9 @@ class MenuScreen: UIViewController {
         // Fetch menu items from your data source (e.g., API or local database)
         // For now, let's use dummy data
         menuItems = [
-            MenuItem(id: "1", name: "Burger", description: "Delicious beef burger", price: 120, category: ""),
-            MenuItem(id: "2", name: "Fries", description: "Crispy fries", price: 60, category: ""),
-            MenuItem(id: "3", name: "Cola", description: "Refreshing drink", price: 40, category: "")
+            MenuItem(name: "Burger", description: "Delicious beef burger", price: 120, category: ""),
+            MenuItem(name: "Fries", description: "Crispy fries", price: 60, category: ""),
+            MenuItem(name: "Cola", description: "Refreshing drink", price: 40, category: "")
         ]
         tableView.reloadData()
     }
