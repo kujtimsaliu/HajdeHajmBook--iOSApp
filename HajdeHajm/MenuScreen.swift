@@ -103,6 +103,7 @@ class MenuScreen: UIViewController {
         }
         
         submitButton.isEnabled = !selectedItems.isEmpty
+//        submitButton.backgroundColor = selectedItems.isEmpty ? .gray : .systemBlue
     }
     
     @objc private func submitOrder() {

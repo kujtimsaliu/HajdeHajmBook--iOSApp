@@ -35,7 +35,7 @@ class OrdersViewController: UIViewController {
     private let submitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Submit Order", for: .normal)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .gray
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 8
         return button
@@ -133,6 +133,7 @@ class OrdersViewController: UIViewController {
         }
         
         submitButton.isEnabled = !selectedItems.isEmpty
+        submitButton.backgroundColor = selectedItems.isEmpty ? .gray : .systemBlue
     }
     
     @objc private func submitOrder() {

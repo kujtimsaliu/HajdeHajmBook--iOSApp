@@ -173,31 +173,40 @@ class FirestoreManager {
                }
        }
        
-       func markOrdersAsPaid(orders: [Order], completion: @escaping (Result<Void, Error>) -> Void) {
-           let batch = db.batch()
-           
-           for order in orders {
-               let orderRef = db.collection("orders").document(order.id)
-               batch.updateData(["isPaid": true], forDocument: orderRef)
-           }
-           
-           batch.commit { error in
-               if let error = error {
-                   completion(.failure(error))
-               } else {
-                   completion(.success(()))
-               }
-           }
-       }
-       
-       func toggleOrderPaymentStatus(order: Order, completion: @escaping (Result<Void, Error>) -> Void) {
-           let orderRef = db.collection("orders").document(order.id)
-           orderRef.updateData(["isPaid": !order.isPaid]) { error in
-               if let error = error {
-                   completion(.failure(error))
-               } else {
-                   completion(.success(()))
-               }
-           }
-       }
+    func markOrdersAsPaid(orders: [Order], completion: @escaping (Result<Void, Error>) -> Void) {
+        guard !orders.isEmpty else {
+            completion(.success(()))
+            return
+        }
+        
+        let batch = db.batch()
+        
+        for order in orders {
+            let orderRef = db.collection("orders").document(order.id)
+            batch.updateData(["isPaid": true], forDocument: orderRef)
+        }
+        
+        batch.commit { error in
+            if let error = error {
+                print("Error marking orders as paid: \(error.localizedDescription)")
+                completion(.failure(error))
+            } else {
+                print("Successfully marked \(orders.count) orders as paid")
+                completion(.success(()))
+            }
+        }
+    }
+    
+    func toggleOrderPaymentStatus(order: Order, completion: @escaping (Result<Void, Error>) -> Void) {
+         let orderRef = db.collection("orders").document(order.id)
+         orderRef.updateData(["isPaid": !order.isPaid]) { error in
+             if let error = error {
+                 print("Error toggling order payment status: \(error.localizedDescription)")
+                 completion(.failure(error))
+             } else {
+                 print("Successfully toggled payment status for order: \(order.id)")
+                 completion(.success(()))
+             }
+         }
+     }
 }
