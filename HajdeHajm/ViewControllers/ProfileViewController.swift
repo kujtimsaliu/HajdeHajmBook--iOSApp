@@ -27,6 +27,7 @@ class ProfileViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
         return label
     }()
     
@@ -73,8 +74,8 @@ class ProfileViewController: UIViewController {
     }
     
     init(window: UIWindow?){
-        super.init(nibName: nil, bundle: nil)
         self.window = window
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -129,7 +130,7 @@ class ProfileViewController: UIViewController {
     
     private func loadUserData() {
         // In a real app, you would fetch this data from your user management system
-        nameLabel.text = "John Doe"
+        nameLabel.text = "Bashkim Krasniqi (swift autocomplete came up with this name)"
         profileImageView.image = UIImage(systemName: "person.circle.fill")
     }
     

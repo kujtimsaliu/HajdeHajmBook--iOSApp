@@ -7,6 +7,7 @@
 
 import UIKit
 import FirebaseCore
+import FirebaseAppCheck
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
 //        FirebaseApp.configure()
         NotificationManager.shared.requestAuthorization()
+        
+        AppCheck.setAppCheckProviderFactory(nil)
         
         FirebaseApp.app()?.isDataCollectionDefaultEnabled = false
         

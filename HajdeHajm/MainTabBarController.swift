@@ -16,10 +16,10 @@ class MainTabBarController: UITabBarController {
     var window: UIWindow?
     
     init(window: UIWindow?, currentUser: FirebaseAuth.User?) {
-        super.init(nibName: nil, bundle: nil)
         print("current user: \(String(describing: currentUser?.email))")
         self.window = window
         self.currentUser = currentUser
+        super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {

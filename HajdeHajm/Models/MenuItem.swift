@@ -7,8 +7,7 @@
 
 import Foundation
 
-struct MenuItem: Codable, Identifiable, Hashable {
-    var id: String? = nil
+struct MenuItem: Codable, Hashable {
     let name: String
     let description: String
     let price: Int

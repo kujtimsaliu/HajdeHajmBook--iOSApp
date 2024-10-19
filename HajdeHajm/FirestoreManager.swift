@@ -172,31 +172,54 @@ class FirestoreManager {
                    completion(.success(orders))
                }
        }
-       
+    
+    
     func markOrdersAsPaid(orders: [Order], completion: @escaping (Result<Void, Error>) -> Void) {
         guard !orders.isEmpty else {
             completion(.success(()))
             return
         }
         
-        let batch = db.batch()
-        
-        for order in orders {
-            let orderRef = db.collection("orders").document(order.id)
-            batch.updateData(["isPaid": true], forDocument: orderRef)
+        guard let currentUser = Auth.auth().currentUser else {
+            completion(.failure(NSError(domain: "FirestoreManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+            return
         }
         
-        batch.commit { error in
-            if let error = error {
-                print("Error marking orders as paid: \(error.localizedDescription)")
-                completion(.failure(error))
-            } else {
-                print("Successfully marked \(orders.count) orders as paid")
+        print("Current user UID: \(currentUser.uid)")
+        
+        let dispatchGroup = DispatchGroup()
+        var updateErrors: [Error] = []
+        
+        for order in orders {
+            dispatchGroup.enter()
+            let orderRef = db.collection("orders").document(order.id)
+            
+            print("Attempting to update order \(order.id) for user \(order.userId)")
+            print("Current isPaid status: \(order.isPaid)")
+            
+            orderRef.updateData(["isPaid": true]) { error in
+                if let error = error {
+                    print("Error updating order \(order.id): \(error.localizedDescription)")
+                    updateErrors.append(error)
+                } else {
+                    print("Successfully updated order \(order.id)")
+                }
+                dispatchGroup.leave()
+            }
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            if updateErrors.isEmpty {
+                print("Successfully marked all orders as paid")
                 completion(.success(()))
+            } else {
+                print("Errors occurred while marking orders as paid")
+                completion(.failure(updateErrors.first!))
             }
         }
     }
-    
+
+
     func toggleOrderPaymentStatus(order: Order, completion: @escaping (Result<Void, Error>) -> Void) {
          let orderRef = db.collection("orders").document(order.id)
          orderRef.updateData(["isPaid": !order.isPaid]) { error in
