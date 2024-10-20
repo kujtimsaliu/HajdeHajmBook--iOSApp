@@ -120,9 +120,9 @@ class OrdersViewController: UIViewController {
             "🌮 Taco Tuesday on a non-Tuesday? Rebel without a lunch cause!"
         ]
         
-        let randomMessage = funnyMessages.randomElement() ?? "Time to venture out for food!"
+        let _ = funnyMessages.randomElement() ?? "Time to venture out for food!"
         
-        let alertController = UIAlertController(title: "TTPP Activated!", message: randomMessage, preferredStyle: .alert)
+        let alertController = UIAlertController(title: "TTPP Activated!", message: "", preferredStyle: .alert)
         
         alertController.addAction(UIAlertAction(title: "Let's Go!", style: .default, handler: { _ in
             self.animateTTPPExit()
